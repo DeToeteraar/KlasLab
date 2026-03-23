@@ -1,54 +1,49 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Separator } from '@/components/ui/separator';
 
 export default function Footer() {
     const currentYear = new Date().getFullYear();
 
     return (
-        <section className="kl-band kl-band--dark">
-            <div className="container">
-                <footer className="pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px' }}>
-                    <div className="row g-3 align-items-center">
-                        <div className="col-md-6 d-flex align-items-center">
-                            <Link href="#top" className="footer-brand me-3" aria-label="KlasLab home">
+        <section className="band-dark py-10">
+            <div className="max-w-[1200px] mx-auto px-4 md:px-8">
+                <Separator className="mb-6 bg-white/10" />
+                <footer>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                        <div className="flex items-center gap-3">
+                            <Link href="#top" aria-label="KlasLab home" className="no-underline">
                                 <Image
                                     src="/assets/img/KlasLab_logo_v2.0_inverted.png"
                                     alt="KlasLab logo"
                                     width={80}
                                     height={40}
-                                    style={{ height: 'auto', width: 'auto', maxHeight: '40px' }}
+                                    className="h-[32px] lg:h-[40px] w-auto transition-transform duration-150 hover:-translate-y-0.5"
                                 />
                             </Link>
                             <div>
-                                <div className="fw-semibold">KlasLab</div>
-                                <div className="text-muted small">Standaardwerk voor vaksecties.</div>
+                                <div className="font-semibold text-kl-light">KlasLab</div>
+                                <div className="text-kl-light/70 text-sm">Standaardwerk voor vaksecties.</div>
                             </div>
                         </div>
-                        <div className="col-md-6 text-md-end">
-                            <Link href="#top" className="link-light text-decoration-none me-3">
-                                Naar boven
-                            </Link>
-                            <Link href="#privacy" className="link-light text-decoration-none me-3">
-                                Privacy
-                            </Link>
-                            <a href="mailto:info@klaslab.nl" className="link-light text-decoration-none">
-                                <svg
-                                    className="email-icon"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    width="16"
-                                    height="16"
-                                    focusable="false"
-                                    aria-hidden="true"
-                                    style={{ width: '16px', height: '16px', verticalAlign: 'middle', marginRight: '6px' }}
-                                >
-                                    <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" fill="none" />
-                                    <polyline points="3 7 12 13 21 7" stroke="currentColor" fill="none" />
-                                </svg>
-                                <span>info@klaslab.nl</span>
-                            </a>
-                            <div className="text-muted small mt-2">&copy; {currentYear} KlasLab</div>
+                        <div className="md:text-right flex flex-col md:items-end gap-2">
+                            <div className="flex flex-wrap gap-4">
+                                <Link href="#top" className="text-kl-light/90 hover:text-kl-accent transition-colors no-underline">
+                                    Naar boven
+                                </Link>
+                                <Link href="/privacy" className="text-kl-light/90 hover:text-kl-accent transition-colors no-underline">
+                                    Privacy
+                                </Link>
+                                <a href="mailto:info@klaslab.nl" className="text-kl-light/90 hover:text-kl-accent transition-colors no-underline inline-flex items-center gap-1.5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" className="stroke-current fill-none">
+                                        <rect x="3" y="5" width="18" height="14" rx="2" />
+                                        <polyline points="3 7 12 13 21 7" />
+                                    </svg>
+                                    info@klaslab.nl
+                                </a>
+                            </div>
+                            <div className="text-kl-light/50 text-sm">&copy; {currentYear} KlasLab</div>
                         </div>
                     </div>
                 </footer>

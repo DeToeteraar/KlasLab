@@ -3,67 +3,86 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 
 export default function Navbar() {
-    const [isOpen, setIsOpen] = useState(false);
+    const [open, setOpen] = useState(false);
+
+    const navItems = [
+        { href: '#aanbod', label: 'Aanbod' },
+        { href: '#werkwijze', label: 'Werkwijze' },
+        { href: '#faq', label: 'FAQ' },
+    ];
 
     return (
         <nav className="kl-navbar">
-            <div className="container">
-                <div className="d-flex align-items-center justify-content-between">
-                    <Link href="#top" className="navbar-brand d-flex align-items-center">
+            <div className="max-w-[1200px] mx-auto px-4 md:px-8">
+                <div className="flex items-center justify-between">
+                    <Link href="#top" className="flex items-center no-underline">
                         <Image
                             src="/assets/img/KlasLab_logo_v2.0_inverted.png"
                             alt="KlasLab logo"
                             width={128}
                             height={64}
                             priority
-                            style={{ height: 'auto', maxHeight: '64px', width: 'auto' }}
+                            className="h-[40px] lg:h-[64px] w-auto transition-transform duration-150 hover:-translate-y-0.5"
                         />
                     </Link>
 
-                    <button
-                        className="navbar-toggler d-lg-none"
-                        type="button"
-                        onClick={() => setIsOpen(!isOpen)}
-                        aria-label="Menu"
-                        style={{
-                            background: 'transparent',
-                            border: '1px solid rgba(255,255,255,0.3)',
-                            padding: '0.5rem',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                        }}
-                    >
-                        <span style={{ display: 'block', width: '24px', height: '2px', background: '#fff', margin: '4px 0' }} />
-                        <span style={{ display: 'block', width: '24px', height: '2px', background: '#fff', margin: '4px 0' }} />
-                        <span style={{ display: 'block', width: '24px', height: '2px', background: '#fff', margin: '4px 0' }} />
-                    </button>
+                    {/* Desktop navigatie */}
+                    <ul className="hidden lg:flex items-center gap-6 list-none m-0 p-0">
+                        {navItems.map((item) => (
+                            <li key={item.href} className="list-none">
+                                <Link href={item.href} className="text-kl-light/90 hover:text-kl-accent transition-colors duration-150 no-underline">
+                                    {item.label}
+                                </Link>
+                            </li>
+                        ))}
+                        <li className="list-none">
+                            <Link
+                                href="#kennismaking-cta"
+                                className="inline-block px-5 py-2.5 bg-kl-accent text-kl-ink font-medium rounded-lg hover:bg-kl-accent-hover transition-all duration-150 no-underline shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                            >
+                                Kennismaking aanvragen
+                            </Link>
+                        </li>
+                    </ul>
 
-                    <div className={`navbar-collapse ${isOpen ? 'd-block' : 'd-none'} d-lg-flex`}>
-                        <ul className="navbar-nav d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-3 mt-3 mt-lg-0 ms-lg-auto">
-                            <li className="nav-item">
-                                <Link href="#aanbod" className="nav-link" onClick={() => setIsOpen(false)}>
-                                    Aanbod
-                                </Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link href="#werkwijze" className="nav-link" onClick={() => setIsOpen(false)}>
-                                    Werkwijze
-                                </Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link href="#faq" className="nav-link" onClick={() => setIsOpen(false)}>
-                                    FAQ
-                                </Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link href="#kennismaking-cta" className="btn btn-accent ms-lg-3" onClick={() => setIsOpen(false)}>
+                    {/* Mobiel menu (Sheet) */}
+                    <Sheet open={open} onOpenChange={setOpen}>
+                        <SheetTrigger
+                            className="lg:hidden p-2 rounded border border-white/30 bg-transparent cursor-pointer"
+                            aria-label="Menu"
+                        >
+                            <div className="flex flex-col gap-1">
+                                <span className="block w-6 h-0.5 bg-white" />
+                                <span className="block w-6 h-0.5 bg-white" />
+                                <span className="block w-6 h-0.5 bg-white" />
+                            </div>
+                        </SheetTrigger>
+                        <SheetContent side="right" className="bg-kl-ink border-kl-ink w-72">
+                            <SheetTitle className="text-kl-light text-lg font-semibold mb-6">Menu</SheetTitle>
+                            <nav className="flex flex-col gap-4">
+                                {navItems.map((item) => (
+                                    <Link
+                                        key={item.href}
+                                        href={item.href}
+                                        onClick={() => setOpen(false)}
+                                        className="text-kl-light/90 hover:text-kl-accent text-lg transition-colors no-underline"
+                                    >
+                                        {item.label}
+                                    </Link>
+                                ))}
+                                <Link
+                                    href="#kennismaking-cta"
+                                    onClick={() => setOpen(false)}
+                                    className="inline-block mt-4 px-5 py-3 bg-kl-accent text-kl-ink font-semibold rounded-lg text-center no-underline hover:bg-kl-accent-hover transition-all"
+                                >
                                     Kennismaking aanvragen
                                 </Link>
-                            </li>
-                        </ul>
-                    </div>
+                            </nav>
+                        </SheetContent>
+                    </Sheet>
                 </div>
             </div>
         </nav>
