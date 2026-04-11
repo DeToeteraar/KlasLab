@@ -93,7 +93,8 @@ src/
 | `niveau` | Een onderwijsniveau, bijv. HAVO |
 | `onderwerp` | Een inhoudsthema, hiërarchisch via ouder_id |
 | `leerdoel_slo` | Een officieel SLO-leerdoel, optioneel hiërarchisch |
-| `leerdoel_methode` | Een methode-eigen leerdoel, gekoppeld aan een editie |
+| `leerdoel_kern` | Een gestandaardiseerd kernleerdoel — de spil tussen SLO en methode |
+| `leerdoel_methode` | Een methode-eigen leerdoel, gekoppeld aan een paragraaf en altijd aan een kernleerdoel |
 | `vaardigheid` | Een vaardigheid, bijv. "formule omschrijven" |
 | `taxonomiesysteem` | Een taxonomiesysteem, bijv. Bloom of RTTI |
 | `taxonomielabel` | Een label binnen een systeem, bijv. "Toepassen" |
@@ -141,7 +142,8 @@ Leerjaren per niveau (als richtlijn, niet afgedwongen in de database):
 |---|---|
 | `onderwerp` | `id`, `naam`, `ouder_id` (optioneel, zelfverwijzend) |
 | `leerdoel_slo` | `id`, `omschrijving`, `ouder_id` (optioneel, zelfverwijzend) |
-| `leerdoel_methode` | `id`, `omschrijving`, `paragraaf_id`, `ouder_id` (optioneel, zelfverwijzend) |
+| `leerdoel_kern` | `id`, `omschrijving`, `leerdoel_slo_id` (optioneel FK naar `leerdoel_slo`) |
+| `leerdoel_methode` | `id`, `omschrijving`, `paragraaf_id`, `leerdoel_kern_id` (verplichte FK naar `leerdoel_kern`), `ouder_id` (optioneel, zelfverwijzend) |
 | `vaardigheid` | `id`, `naam` |
 
 > `leerdoel_methode` heeft een FK naar `paragraaf` — de editie volgt impliciet via de hiërarchie paragraaf → hoofdstuk → editie.
@@ -222,6 +224,8 @@ Bevat een volledige snapshot van de kernvelden van `vraag` op het moment van een
 | `methode` → | `editie` | Een methode heeft meerdere edities |
 | `editie` → | `hoofdstuk` | Een editie heeft meerdere hoofdstukken |
 | `paragraaf` → | `leerdoel_methode` | Leerdoelen zijn gekoppeld aan een paragraaf |
+| `leerdoel_kern` → | `leerdoel_methode` | Elk methode-leerdoel verwijst verplicht naar een kernleerdoel |
+| `leerdoel_slo` ← | `leerdoel_kern` | Een kernleerdoel verwijst optioneel naar zijn SLO-bron |
 | `hoofdstuk` → | `paragraaf` | Een hoofdstuk heeft meerdere paragrafen |
 | `taxonomiesysteem` → | `taxonomielabel` | Een systeem heeft meerdere labels |
 | `vraagtype` → | `vraag` | Een vraagtype hoort bij meerdere vragen |
@@ -242,18 +246,29 @@ Zelfverwijzende hiërarchie:
 
 | Koppeltabel | Verbindt | Toelichting |
 |---|---|---|
-| `vraag_paragraaf` | `vraag` ↔ `paragraaf` | |
-| `vraag_leerdoel_slo` | `vraag` ↔ `leerdoel_slo` | |
-| `vraag_leerdoel_methode` | `vraag` ↔ `leerdoel_methode` | |
-| `vraag_onderwerp` | `vraag` ↔ `onderwerp` | |
-| `vraag_vaardigheid` | `vraag` ↔ `vaardigheid` | |
-| `vraag_taxonomielabel` | `vraag` ↔ `taxonomielabel` | |
+| `vraag_leerdoel_kern` | `vraag` ↔ `leerdoel_kern` | Primaire leerdoelkoppeling — altijd via de kern |
+| `vraag_onderwerp` | `vraag` ↔ `onderwerp` | Optioneel |
+| `paragraaf_onderwerp` | `paragraaf` ↔ `onderwerp` | Inhoudelijke classificatie van een paragraaf |
+| `leerdoel_kern_onderwerp` | `leerdoel_kern` ↔ `onderwerp` | Inhoudelijke classificatie van een kernleerdoel |
+| `vraag_vaardigheid` | `vraag` ↔ `vaardigheid` | Optioneel |
+| `vraag_taxonomielabel` | `vraag` ↔ `taxonomielabel` | Optioneel |
 | `vraag_niveau_leerjaar` | `vraag` ↔ `niveau` + `leerjaar` | Gecombineerd: `vraag_id`, `niveau_id`, `leerjaar` (integer) |
-| `vraag_asset` | `vraag` ↔ `asset` | |
-| `subvraag_asset` | `subvraag` ↔ `asset` | |
-| `uitwerking_asset` | `uitwerking` ↔ `asset` | |
+| `vraag_asset` | `vraag` ↔ `asset` | Optioneel |
+| `subvraag_asset` | `subvraag` ↔ `asset` | Optioneel |
+| `uitwerking_asset` | `uitwerking` ↔ `asset` | Optioneel |
+| `leerdoel_kern_niveau_leerjaar` | `leerdoel_kern` ↔ `niveau` + `leerjaar` | Gecombineerd: `leerdoel_kern_id`, `niveau_id`, `leerjaar` (integer) |
 
-> Een vraag koppelen aan een `paragraaf` impliceert de volledige hiërarchie omhoog (hoofdstuk → editie → methode → vak). Directe koppeling aan een hoger niveau is niet nodig.
+> Een vraag koppelt uitsluitend aan `leerdoel_kern`. Via de kern zijn alle methode-leerdoelen en het SLO-leerdoel bereikbaar. Directe koppelingen van vraag naar `leerdoel_slo` of `leerdoel_methode` bestaan niet.
+
+> Zoekpaden:
+> - Vraag → kern → methode-leerdoel
+> - Vraag → kern → SLO-leerdoel
+> - Methode-leerdoel → kern → vraag
+> - SLO-leerdoel → kern → vraag
+
+> Een vraag koppelen aan een `paragraaf` loopt via `leerdoel_methode` → `paragraaf`. Directe koppeling van vraag naar paragraaf is niet nodig.
+
+> Alle koppelingen vanuit `vraag` zijn optioneel behalve `leerdoel_kern` — een vraag heeft altijd minstens één kernleerdoel.
 
 ---
 
@@ -273,6 +288,10 @@ Zelfverwijzende hiërarchie:
 | Taxonomie | Aparte tabellen voor systeem én label — flexibel voor meerdere systemen per vraag |
 | Assets | Opgeslagen in Supabase Storage (buckets per type), database bevat alleen de URL. Deelbaar via koppeltabellen. |
 | Hergebruik | Één vraag koppelbaar aan meerdere methodes, paragrafen en leerdoelen |
+| Leerdoel_kern | Spil tussen SLO en methode. Bevat optionele FK naar `leerdoel_slo`. Elk methode-leerdoel heeft verplichte FK naar `leerdoel_kern`. Een vraag koppelt altijd aan `leerdoel_kern` — nooit direct aan SLO of methode-leerdoel. |
+| Kernleerdoelen ontstaan | Primair uit SLO-leerdoelen. Bij invoer van methode-leerdoelen zoekt AI naar passend kernleerdoel — anders nieuw kernleerdoel aanmaken. |
+| Optionaliteit | Alle koppelingen vanuit `vraag` zijn optioneel behalve `leerdoel_kern` — een vraag heeft altijd minstens één kernleerdoel. |
+| Leerdoel_kern + niveau/leerjaar | Koppeltabel `leerdoel_kern_niveau_leerjaar` — één kernleerdoel kan voor meerdere niveaus en leerjaren gelden. |
 | Eerste methode | NOVA 1/2 HAVO/VWO MAX Release 5.1 |
 
 ---
