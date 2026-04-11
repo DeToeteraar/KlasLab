@@ -34,6 +34,22 @@ Elke beslissing volgt dit format:
 **Motivatie:** TypeScript biedt alleen compile-time checks, niet runtime — API input moet altijd gevalideerd worden
 **Alternatieven overwogen:** Yup (minder TypeScript-integratie), handmatige validatie (foutgevoelig)
 
+### PostgreSQL boven Neo4j voor KlasLab Vragenbank
+**Datum:** 2026-04-12
+**Beslissing:** PostgreSQL via Supabase is de databasekeuze voor de KlasLab Vragenbank, ook al heeft het datamodel veel relaties en koppelingen.
+**Motivatie:**
+Het datamodel is relatierijk maar structureel voorspelbaar — het is een hiërarchie (Vak → Methode → Editie → Hoofdstuk → Paragraaf) met many-to-many uitbreidingen daarop. Dat is geen echte graaf met willekeurige verbindingen in alle richtingen. PostgreSQL handelt dit goed af met de juiste indexen en een `vraag_volledig` view die complexe joins voor AI en applicatie vereenvoudigt.
+
+Daarnaast biedt Supabase veel meer dan alleen een database: ingebouwde storage (voor assets), authenticatie, realtime en pgvector voor semantisch zoeken. Al deze onderdelen zijn nodig voor dit project en zouden bij Neo4j apart opgelost moeten worden.
+
+pgvector is voor AI-gebruik sterker dan graph traversal: semantisch zoeken op vraag-inhoud ("geef vragen die lijken op deze vraag") is een realistischere AI-feature dan graph-pathfinding.
+
+Neo4j zou pas meerwaarde hebben bij echte graph-queries: overlappingen tussen methodes detecteren, curriculum-gaten vinden, aanbevelingen op basis van leerpatronen. Dit zijn fase 4+ features die nog niet in scope zijn. Als die behoefte ontstaat, kan Neo4j naast Supabase worden toegevoegd.
+
+**Alternatieven overwogen:** Neo4j — sterker bij willekeurige graph traversal en curriculum-analyse, maar vereist aparte oplossingen voor storage, auth en AI-search. Niet nodig voor de huidige scope en schaal.
+
+---
+
 ### AGENTS.md als centrale ingang
 **Datum:** 2026-04-11
 **Beslissing:** Alle AI-agents lezen eerst AGENTS.md, AI-bestanden zijn dun
