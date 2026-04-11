@@ -4,7 +4,8 @@
 
 **KlasLab Vragenbank** is een gestructureerde, doorzoekbare database met onderwijsvragen voor het voortgezet onderwijs, te beginnen bij natuurkunde. De kern van het project is de kwaliteit en structuur van de data — niet de interface. Vragen worden door AI gegenereerd op basis van doordachte skills en zijn koppelbaar aan methodes, leerdoelen, onderwerpen en taxonomie.
 
-Het centrale requirements- en ontwerpdocument staat in `docs/klaslab-vragenbank-requirements.md`.
+Het projectoverzicht en de functionaliteiten staan in `docs/requirements.md`.
+Het volledige databaseontwerp staat in `docs/datamodel.md`.
 
 ---
 
@@ -16,7 +17,8 @@ Het centrale requirements- en ontwerpdocument staat in `docs/klaslab-vragenbank-
 | Begrijpen hoe tools samenwerken | `docs/architecture.md` |
 | Code schrijven (naamgeving, structuur) | `docs/conventions.md` |
 | Architectuurbeslissing nemen of bekijken | `docs/decisions.md` |
-| Requirements en ontwerp bekijken | `docs/klaslab-vragenbank-requirements.md` |
+| Project, functies en fasering bekijken | `docs/requirements.md` |
+| Datamodel en databasestructuur bekijken | `docs/datamodel.md` |
 | Specifieke tool opzoeken | `tools/[tool].md` |
 | Skill uitvoeren (component, API, etc.) | `skills/[skill].md` |
 | Feature bouwen | `workflows/nieuwe-feature.md` |
