@@ -85,8 +85,9 @@ src/
 #### Curriculum & Methode
 | Node | Toelichting |
 |---|---|
-| `Vak` | Bijv. "Natuurkunde", "Scheikunde". Methodes hangen onder een vak. |
-| `Methode` | Een lesmethode, bijv. "NOVA". Hangt onder een vak. |
+| `Vak` | Bijv. "Natuurkunde", "Scheikunde". |
+| `Uitgever` | Bijv. "Noordhoff", "Malmberg". Een uitgever kan meerdere methodes hebben voor meerdere vakken. |
+| `Methode` | Een lesmethode, bijv. "NOVA". Behoort aan één uitgever én één vak. |
 | `Editie` | Versie van een methode, bijv. "NOVA 1/2 HAVO/VWO MAX Release 5.1" |
 | `Hoofdstuk` | Hoofdstuk binnen een methode-editie |
 | `Paragraaf` | Paragraaf binnen een hoofdstuk |
@@ -102,6 +103,7 @@ src/
 #### Taxonomie
 | Node | Toelichting |
 |---|---|
+| `Niveau` | Basisonderwijs, VMBO-b, VMBO-k, VMBO-t, HAVO, VWO. MBO/HBO/WO volgen later. |
 | `Taxonomiesysteem` | Bijv. "Bloom", "RTTI" |
 | `Taxonomielabel` | Bijv. "Toepassen" (Bloom), "Transfer" (RTTI). Gekoppeld aan een systeem. |
 
@@ -151,6 +153,67 @@ src/
 ### Versiegeschiedenis
 Actuele versie staat in de hoofdtabel `Vraag`. Oude versies worden opgeslagen in `Vraag_Versie` en alleen opgehaald wanneer expliciet gevraagd.
 
+### Relaties
+
+#### Directe relaties (één-op-veel)
+
+Een directe relatie betekent: de child heeft een `foreign key` naar de parent. Één parent, meerdere children.
+
+| Van | Naar | Toelichting |
+|---|---|---|
+| `Vak` → | `Methode` | Een vak heeft meerdere methodes |
+| `Uitgever` → | `Methode` | Een uitgever heeft meerdere methodes (voor meerdere vakken) |
+| `Methode` → | `Editie` | Een methode heeft meerdere edities |
+| `Editie` → | `Hoofdstuk` | Een editie heeft meerdere hoofdstukken |
+| `Hoofdstuk` → | `Paragraaf` | Een hoofdstuk heeft meerdere paragrafen |
+| `Taxonomiesysteem` → | `Taxonomielabel` | Een systeem heeft meerdere labels |
+| `Vraagtype` → | `Vraag` | Een vraagtype wordt gebruikt door meerdere vragen |
+| `Vraag` → | `Subvraag` | Een vraag heeft meerdere subvragen (optioneel) |
+| `Vraag` → | `Correctievoorschrift` | Eén correctievoorschrift per vraag (optioneel) |
+| `Vraag` → | `Uitwerking` | Één uitwerking per vraag (optioneel) |
+| `Leerdoel_Methode` → | `Methode` | Een methode-leerdoel hoort bij een specifieke methode |
+
+Zelfverwijzende hiërarchie (ouder-kind binnen dezelfde tabel):
+
+| Tabel | Via |
+|---|---|
+| `Onderwerp` | `ouder_id` → `Onderwerp.id` (optioneel, onbeperkt diep) |
+| `Leerdoel_SLO` | `ouder_id` → `Leerdoel_SLO.id` (optioneel) |
+| `Leerdoel_Methode` | `ouder_id` → `Leerdoel_Methode.id` (optioneel) |
+
+---
+
+#### Koppeltabellen (veel-op-veel)
+
+Een vraag is de spil van het datamodel. Ze is via koppeltabellen verbonden aan alle inhoudelijke contexten.
+
+| Koppeltabel | Verbindt |
+|---|---|
+| `vraag_paragraaf` | `Vraag` ↔ `Paragraaf` |
+| `vraag_leerdoel_slo` | `Vraag` ↔ `Leerdoel_SLO` |
+| `vraag_leerdoel_methode` | `Vraag` ↔ `Leerdoel_Methode` |
+| `vraag_onderwerp` | `Vraag` ↔ `Onderwerp` |
+| `vraag_vaardigheid` | `Vraag` ↔ `Vaardigheid` |
+| `vraag_taxonomielabel` | `Vraag` ↔ `Taxonomielabel` |
+| `vraag_niveau_leerjaar` | `Vraag` ↔ `Niveau` + leerjaar (gecombineerd, zie toelichting) |
+| `vraag_asset` | `Vraag` ↔ `Asset` |
+| `subvraag_asset` | `Subvraag` ↔ `Asset` |
+| `uitwerking_asset` | `Uitwerking` ↔ `Asset` |
+
+> Niveau en leerjaar worden als gecombineerde koppeling opgeslagen. De koppeltabel `vraag_niveau_leerjaar` bevat `vraag_id`, `niveau_id` en `leerjaar` (integer). Zo kun je zeggen: "deze vraag is voor HAVO jaar 4 én VWO jaar 3" zonder dat de waarden door elkaar lopen.
+
+> Een vraag koppelen aan een `Paragraaf` impliceert de volledige hiërarchie omhoog (Hoofdstuk → Editie → Methode → Vak). Directe koppeling aan een hoger niveau is niet nodig.
+
+> Assets worden opgeslagen in Supabase Storage. De database bevat alleen de URL als verwijzing. Een asset kan gedeeld worden tussen meerdere vragen, subvragen en uitwerkingen.
+
+---
+
+#### Openstaande ontwerpkeuzes (relaties)
+
+Alle keuzes zijn gemaakt. Geen openstaande punten.
+
+---
+
 ### Ontwerpkeuzes
 | Onderwerp | Beslissing |
 |---|---|
@@ -159,8 +222,10 @@ Actuele versie staat in de hoofdtabel `Vraag`. Oude versies worden opgeslagen in
 | Taxonomie | Aparte nodes voor systeem én label — flexibel voor meerdere systemen per vraag |
 | Vraagtype | Aparte node met eigen eigenschappen |
 | Subvragen | Optioneel, met eigen context_tekst |
-| Assets | Aparte node, koppelbaar aan zowel Vraag als Subvraag |
-| Leerjaar + niveau | Koppelrelaties, geen vaste eigenschappen |
+| Assets | Aparte node, koppelbaar aan Vraag, Subvraag én Uitwerking via koppeltabellen |
+| Leerjaar + niveau | Gecombineerde koppeltabel `vraag_niveau_leerjaar` met `niveau_id` + `leerjaar` (integer). Niveau is een vaste lijst: Basisonderwijs (1–8), VMBO-b/k/t (1–4), HAVO (1–5), VWO (1–6). MBO/HBO/WO volgen later. |
+| Correctievoorschrift | Alleen tekst — geen assets. Vaste opbouw nog te ontwerpen. |
+| Assets | Opgeslagen in Supabase Storage, database bevat alleen de URL. Deelbaar tussen vragen, subvragen en uitwerkingen via koppeltabellen. |
 | Hergebruik | Één vraag koppelbaar aan meerdere methodes, paragrafen en leerdoelen |
 | Eerste methode | NOVA 1/2 HAVO/VWO MAX Release 5.1 |
 
@@ -187,9 +252,9 @@ Geen afwijkingen van de standaard conventies in `docs/conventions.md`.
 
 ## 10. Open vragen
 
-- [ ] Relaties tussen nodes volledig uitwerken
+- [x] Relaties tussen nodes volledig uitwerken — zie sectie 7 "Relaties"
 - [ ] Mapping van NOVA uitwerken (hoofdstukken, paragrafen, leerdoelen, onderwerpen)
 - [ ] Vaste opbouw van het correctievoorschrift ontwerpen
-- [ ] Hoe leerjaar + niveau technisch als koppeltabel opzetten?
+- [x] Hoe leerjaar + niveau technisch als koppeltabel opzetten? — gecombineerde tabel `vraag_niveau_leerjaar`
 - [ ] Wie zijn de gebruikers en hoe wordt de database aangeboden?
 - [ ] Authenticatie en toegangsbeheer (volgt zodra gebruikers bekend zijn)
