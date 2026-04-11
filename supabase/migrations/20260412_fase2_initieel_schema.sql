@@ -174,6 +174,10 @@ create table vraag (
   aangemaakt_op timestamptz not null default now(),
   laatst_gewijzigd timestamptz not null default now(),
   gewijzigd_door text,
+  -- Full-text search index (automatisch bijgewerkt bij wijziging van vraag_tekst of context_tekst)
+  zoekindex tsvector generated always as (
+    to_tsvector('dutch', coalesce(vraag_tekst, '') || ' ' || coalesce(context_tekst, ''))
+  ) stored,
   -- Vector embedding voor semantisch zoeken (fase 3+)
   embedding vector(1536)
 );
@@ -334,6 +338,7 @@ create index on leerdoel_methode(ouder_id);
 
 -- Vragen
 create index on vraag(status);
+create index on vraag using gin(zoekindex);
 create index on vraag(gemaakt_door);
 create index on subvraag(vraag_id);
 create index on subvraag(volgorde);
@@ -403,6 +408,19 @@ select
   ) as niveaus
 from vraag v
 left join vraagtype vt on v.vraagtype_id = vt.id;
+
+
+-- -----------------------------------------------------------------------------
+-- STORAGE BUCKETS
+-- Maak deze buckets handmatig aan in het Supabase dashboard na uitvoeren van
+-- deze migratie: Storage → New bucket
+--
+--   afbeeldingen   (private)
+--   videos         (private)
+--   formules       (private)
+--
+-- Assets in de database verwijzen via de `url`-kolom naar bestanden in deze buckets.
+-- -----------------------------------------------------------------------------
 
 
 -- -----------------------------------------------------------------------------
