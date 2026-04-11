@@ -80,154 +80,214 @@ src/
 
 ## 7. Data & Database
 
-### Nodes (entiteiten)
+### Tabeloverzicht
+
+| Tabel | Wat het is |
+|---|---|
+| `vak` | Een schoolvak, bijv. Natuurkunde |
+| `uitgever` | Een educatieve uitgever, bijv. Noordhoff |
+| `methode` | Een lesmethode van een uitgever voor een vak, bijv. NOVA |
+| `editie` | Een versie van een methode, bijv. NOVA Release 5.1 |
+| `hoofdstuk` | Een hoofdstuk binnen een editie |
+| `paragraaf` | Een paragraaf binnen een hoofdstuk |
+| `niveau` | Een onderwijsniveau, bijv. HAVO |
+| `onderwerp` | Een inhoudsthema, hiërarchisch via ouder_id |
+| `leerdoel_slo` | Een officieel SLO-leerdoel, optioneel hiërarchisch |
+| `leerdoel_methode` | Een methode-eigen leerdoel, gekoppeld aan een editie |
+| `vaardigheid` | Een vaardigheid, bijv. "formule omschrijven" |
+| `taxonomiesysteem` | Een taxonomiesysteem, bijv. Bloom of RTTI |
+| `taxonomielabel` | Een label binnen een systeem, bijv. "Toepassen" |
+| `vraagtype` | Het type vraag, bijv. meerkeuze of open |
+| `vraag` | Een onderwijsvraag — de kernentiteit |
+| `vraag_versie` | Snapshot van een vraag op het moment van een wijziging |
+| `subvraag` | Een deelvraag (a, b, c...) onder een hoofdvraag |
+| `correctievoorschrift` | Beoordelingsmodel bij een vraag, alleen tekst |
+| `uitwerking` | Uitgewerkte oplossing bij een vraag, tekst en/of assets |
+| `asset` | Een bestand (afbeelding, grafiek, tabel, formule, video) in Supabase Storage |
+
+---
+
+### Entiteiten en eigenschappen
 
 #### Curriculum & Methode
-| Node | Toelichting |
+
+| Tabel | Eigenschappen |
 |---|---|
-| `Vak` | Bijv. "Natuurkunde", "Scheikunde". |
-| `Uitgever` | Bijv. "Noordhoff", "Malmberg". Een uitgever kan meerdere methodes hebben voor meerdere vakken. |
-| `Methode` | Een lesmethode, bijv. "NOVA". Behoort aan één uitgever én één vak. |
-| `Editie` | Versie van een methode, bijv. "NOVA 1/2 HAVO/VWO MAX Release 5.1" |
-| `Hoofdstuk` | Hoofdstuk binnen een methode-editie |
-| `Paragraaf` | Paragraaf binnen een hoofdstuk |
+| `vak` | `id`, `naam` |
+| `uitgever` | `id`, `naam` |
+| `methode` | `id`, `naam`, `vak_id`, `uitgever_id` |
+| `editie` | `id`, `naam`, `methode_id` |
+| `hoofdstuk` | `id`, `titel`, `nummer` (integer, optioneel), `volgorde`, `editie_id` |
+| `paragraaf` | `id`, `titel`, `nummer` (integer, optioneel), `volgorde`, `hoofdstuk_id` |
+
+
+#### Niveau
+
+| Tabel | Eigenschappen |
+|---|---|
+| `niveau` | `id`, `naam` |
+
+Vaste waarden: Basisonderwijs, VMBO-b, VMBO-k, VMBO-t, HAVO, VWO. MBO/HBO/WO volgen later.
+
+Leerjaren per niveau (als richtlijn, niet afgedwongen in de database):
+- Basisonderwijs: 1–8
+- VMBO-b/k/t: 1–4
+- HAVO: 1–5
+- VWO: 1–6
 
 #### Inhoud & Doelen
-| Node | Toelichting |
+
+| Tabel | Eigenschappen |
 |---|---|
-| `Onderwerp` | Hiërarchisch via `ouder_id`. Bijv. Elektriciteit → Schakelingen → Serieschakeling. |
-| `Leerdoel_SLO` | Officieel SLO-leerdoel. Optioneel hiërarchisch via `ouder_id`. |
-| `Leerdoel_Methode` | Methode-eigen leerdoel. Optioneel hiërarchisch via `ouder_id`. |
-| `Vaardigheid` | Bijv. "formule omschrijven", "onderzoeksvraag formuleren" |
+| `onderwerp` | `id`, `naam`, `ouder_id` (optioneel, zelfverwijzend) |
+| `leerdoel_slo` | `id`, `omschrijving`, `ouder_id` (optioneel, zelfverwijzend) |
+| `leerdoel_methode` | `id`, `omschrijving`, `paragraaf_id`, `ouder_id` (optioneel, zelfverwijzend) |
+| `vaardigheid` | `id`, `naam` |
+
+> `leerdoel_methode` heeft een FK naar `paragraaf` — de editie volgt impliciet via de hiërarchie paragraaf → hoofdstuk → editie.
 
 #### Taxonomie
-| Node | Toelichting |
+
+| Tabel | Eigenschappen |
 |---|---|
-| `Niveau` | Basisonderwijs, VMBO-b, VMBO-k, VMBO-t, HAVO, VWO. MBO/HBO/WO volgen later. |
-| `Taxonomiesysteem` | Bijv. "Bloom", "RTTI" |
-| `Taxonomielabel` | Bijv. "Toepassen" (Bloom), "Transfer" (RTTI). Gekoppeld aan een systeem. |
+| `taxonomiesysteem` | `id`, `naam` |
+| `taxonomielabel` | `id`, `naam`, `taxonomiesysteem_id` |
 
 #### Vragen
-| Node | Toelichting |
-|---|---|
-| `Vraagtype` | Bijv. meerkeuze, open, berekening, waar/onwaar, invul |
-| `Vraag` | Kernentiteit. Bevat optionele context_tekst als inleiding. |
-| `Subvraag` | Deelvraag onder een hoofdvraag (a, b, c...). Optioneel. |
-| `Asset` | Afbeelding, grafiek, tabel, formule, video. Koppelbaar aan Vraag én Subvraag. |
-| `Correctievoorschrift` | Beoordelingsmodel voor gebruik in toetsen. Krijgt een vaste opbouw (standaard nog te ontwerpen). Optioneel per vraag. |
-| `Uitwerking` | Uitgewerkte oplossing voor gebruik in opdrachtenbladen. Kan bestaan uit tekst, een of meerdere assets (video, afbeelding, grafiek, tabel), of een combinatie. Optioneel per vraag. |
 
-### Eigenschappen van Vraag
+| Tabel | Eigenschappen |
+|---|---|
+| `vraagtype` | `id`, `naam` |
+| `vraag` | zie hieronder |
+| `subvraag` | `id`, `vraag_id`, `label`, `volgorde`, `context_tekst` (optioneel), `vraag_tekst`, `aantal_punten` |
+| `correctievoorschrift` | `id`, `vraag_id`, `tekst` |
+| `uitwerking` | `id`, `vraag_id`, `tekst` (optioneel) |
+| `asset` | `id`, `type`, `bestandsnaam`, `url`, `beschrijving` |
+
+**Eigenschappen van `vraag`:**
+
 | Eigenschap | Type | Toelichting |
 |---|---|---|
 | `id` | UUID | Unieke identifier |
+| `vraagtype_id` | UUID | FK naar `vraagtype` |
 | `context_tekst` | Text | Optionele inleidende tekst |
 | `vraag_tekst` | Text | De vraagtekst |
 | `aantal_punten` | Integer | Maximale score |
-| `gemaakt_door` | Enum | mens / AI |
+| `status` | Enum | `concept` / `gepubliceerd` / `gearchiveerd` — default: `concept` |
+| `gemaakt_door` | Enum | `mens` / `ai` |
+| `ai_model` | Text | Optioneel — welk model heeft de vraag gegenereerd, bijv. "claude-sonnet-4-6" |
+| `skill_ref` | Text | Optioneel — verwijzing naar de skill die de vraag heeft gegenereerd |
 | `versie` | Integer | Versienummer |
 | `aangemaakt_op` | Timestamp | |
 | `laatst_gewijzigd` | Timestamp | |
 | `gewijzigd_door` | Text | Naam of ID van laatste wijziger |
 
-> Leerjaar en niveau zijn koppelrelaties, geen vaste eigenschappen — één vraag kan meerdere leerjaren en niveaus hebben.
+**Eigenschappen van `vraag_versie`:**
 
-### Eigenschappen van Subvraag
+Bevat een volledige snapshot van de kernvelden van `vraag` op het moment van een wijziging. Wordt alleen opgehaald wanneer expliciet gevraagd.
+
 | Eigenschap | Type | Toelichting |
 |---|---|---|
 | `id` | UUID | |
-| `context_tekst` | Text | Optioneel |
+| `vraag_id` | UUID | FK naar de huidige vraag |
 | `vraag_tekst` | Text | |
-| `label` | Text | Bijv. "a", "b", "c" |
+| `context_tekst` | Text | |
 | `aantal_punten` | Integer | |
+| `status` | Enum | |
+| `gemaakt_door` | Enum | |
+| `versie` | Integer | Het versienummer van deze snapshot |
+| `opgeslagen_op` | Timestamp | |
+| `opgeslagen_door` | Text | |
 
-### Eigenschappen van Asset
+**Eigenschappen van `asset`:**
+
 | Eigenschap | Type | Toelichting |
 |---|---|---|
 | `id` | UUID | |
-| `type` | Enum | afbeelding / grafiek / tabel / formule / video |
+| `type` | Enum | `afbeelding` / `grafiek` / `tabel` / `formule` / `video` |
 | `bestandsnaam` | Text | |
-| `url` | Text | Locatie in opslag |
+| `url` | Text | Locatie in Supabase Storage |
 | `beschrijving` | Text | Alt-tekst of toelichting |
 
-### Versiegeschiedenis
-Actuele versie staat in de hoofdtabel `Vraag`. Oude versies worden opgeslagen in `Vraag_Versie` en alleen opgehaald wanneer expliciet gevraagd.
+---
 
 ### Relaties
 
 #### Directe relaties (één-op-veel)
 
-Een directe relatie betekent: de child heeft een `foreign key` naar de parent. Één parent, meerdere children.
-
 | Van | Naar | Toelichting |
 |---|---|---|
-| `Vak` → | `Methode` | Een vak heeft meerdere methodes |
-| `Uitgever` → | `Methode` | Een uitgever heeft meerdere methodes (voor meerdere vakken) |
-| `Methode` → | `Editie` | Een methode heeft meerdere edities |
-| `Editie` → | `Hoofdstuk` | Een editie heeft meerdere hoofdstukken |
-| `Hoofdstuk` → | `Paragraaf` | Een hoofdstuk heeft meerdere paragrafen |
-| `Taxonomiesysteem` → | `Taxonomielabel` | Een systeem heeft meerdere labels |
-| `Vraagtype` → | `Vraag` | Een vraagtype wordt gebruikt door meerdere vragen |
-| `Vraag` → | `Subvraag` | Een vraag heeft meerdere subvragen (optioneel) |
-| `Vraag` → | `Correctievoorschrift` | Eén correctievoorschrift per vraag (optioneel) |
-| `Vraag` → | `Uitwerking` | Één uitwerking per vraag (optioneel) |
-| `Leerdoel_Methode` → | `Methode` | Een methode-leerdoel hoort bij een specifieke methode |
+| `vak` → | `methode` | Een vak heeft meerdere methodes |
+| `uitgever` → | `methode` | Een uitgever heeft meerdere methodes |
+| `methode` → | `editie` | Een methode heeft meerdere edities |
+| `editie` → | `hoofdstuk` | Een editie heeft meerdere hoofdstukken |
+| `paragraaf` → | `leerdoel_methode` | Leerdoelen zijn gekoppeld aan een paragraaf |
+| `hoofdstuk` → | `paragraaf` | Een hoofdstuk heeft meerdere paragrafen |
+| `taxonomiesysteem` → | `taxonomielabel` | Een systeem heeft meerdere labels |
+| `vraagtype` → | `vraag` | Een vraagtype hoort bij meerdere vragen |
+| `vraag` → | `subvraag` | Een vraag heeft meerdere subvragen (optioneel) |
+| `vraag` → | `correctievoorschrift` | Één correctievoorschrift per vraag (optioneel) |
+| `vraag` → | `uitwerking` | Één uitwerking per vraag (optioneel) |
+| `vraag` → | `vraag_versie` | Een vraag heeft meerdere versie-snapshots |
 
-Zelfverwijzende hiërarchie (ouder-kind binnen dezelfde tabel):
+Zelfverwijzende hiërarchie:
 
 | Tabel | Via |
 |---|---|
-| `Onderwerp` | `ouder_id` → `Onderwerp.id` (optioneel, onbeperkt diep) |
-| `Leerdoel_SLO` | `ouder_id` → `Leerdoel_SLO.id` (optioneel) |
-| `Leerdoel_Methode` | `ouder_id` → `Leerdoel_Methode.id` (optioneel) |
-
----
+| `onderwerp` | `ouder_id` → `onderwerp.id` (optioneel, onbeperkt diep) |
+| `leerdoel_slo` | `ouder_id` → `leerdoel_slo.id` (optioneel) |
+| `leerdoel_methode` | `ouder_id` → `leerdoel_methode.id` (optioneel) |
 
 #### Koppeltabellen (veel-op-veel)
 
-Een vraag is de spil van het datamodel. Ze is via koppeltabellen verbonden aan alle inhoudelijke contexten.
+| Koppeltabel | Verbindt | Toelichting |
+|---|---|---|
+| `vraag_paragraaf` | `vraag` ↔ `paragraaf` | |
+| `vraag_leerdoel_slo` | `vraag` ↔ `leerdoel_slo` | |
+| `vraag_leerdoel_methode` | `vraag` ↔ `leerdoel_methode` | |
+| `vraag_onderwerp` | `vraag` ↔ `onderwerp` | |
+| `vraag_vaardigheid` | `vraag` ↔ `vaardigheid` | |
+| `vraag_taxonomielabel` | `vraag` ↔ `taxonomielabel` | |
+| `vraag_niveau_leerjaar` | `vraag` ↔ `niveau` + `leerjaar` | Gecombineerd: `vraag_id`, `niveau_id`, `leerjaar` (integer) |
+| `vraag_asset` | `vraag` ↔ `asset` | |
+| `subvraag_asset` | `subvraag` ↔ `asset` | |
+| `uitwerking_asset` | `uitwerking` ↔ `asset` | |
 
-| Koppeltabel | Verbindt |
-|---|---|
-| `vraag_paragraaf` | `Vraag` ↔ `Paragraaf` |
-| `vraag_leerdoel_slo` | `Vraag` ↔ `Leerdoel_SLO` |
-| `vraag_leerdoel_methode` | `Vraag` ↔ `Leerdoel_Methode` |
-| `vraag_onderwerp` | `Vraag` ↔ `Onderwerp` |
-| `vraag_vaardigheid` | `Vraag` ↔ `Vaardigheid` |
-| `vraag_taxonomielabel` | `Vraag` ↔ `Taxonomielabel` |
-| `vraag_niveau_leerjaar` | `Vraag` ↔ `Niveau` + leerjaar (gecombineerd, zie toelichting) |
-| `vraag_asset` | `Vraag` ↔ `Asset` |
-| `subvraag_asset` | `Subvraag` ↔ `Asset` |
-| `uitwerking_asset` | `Uitwerking` ↔ `Asset` |
-
-> Niveau en leerjaar worden als gecombineerde koppeling opgeslagen. De koppeltabel `vraag_niveau_leerjaar` bevat `vraag_id`, `niveau_id` en `leerjaar` (integer). Zo kun je zeggen: "deze vraag is voor HAVO jaar 4 én VWO jaar 3" zonder dat de waarden door elkaar lopen.
-
-> Een vraag koppelen aan een `Paragraaf` impliceert de volledige hiërarchie omhoog (Hoofdstuk → Editie → Methode → Vak). Directe koppeling aan een hoger niveau is niet nodig.
-
-> Assets worden opgeslagen in Supabase Storage. De database bevat alleen de URL als verwijzing. Een asset kan gedeeld worden tussen meerdere vragen, subvragen en uitwerkingen.
-
----
-
-#### Openstaande ontwerpkeuzes (relaties)
-
-Alle keuzes zijn gemaakt. Geen openstaande punten.
+> Een vraag koppelen aan een `paragraaf` impliceert de volledige hiërarchie omhoog (hoofdstuk → editie → methode → vak). Directe koppeling aan een hoger niveau is niet nodig.
 
 ---
 
 ### Ontwerpkeuzes
+
 | Onderwerp | Beslissing |
 |---|---|
-| Onderwerphiërarchie | Één tabel `Onderwerp` met optionele `ouder_id` — onbeperkt diep |
-| Leerdoelhiërarchie | Zelfde aanpak — plat waar mogelijk, hiërarchisch waar SLO dat vereist |
-| Taxonomie | Aparte nodes voor systeem én label — flexibel voor meerdere systemen per vraag |
-| Vraagtype | Aparte node met eigen eigenschappen |
-| Subvragen | Optioneel, met eigen context_tekst |
-| Assets | Aparte node, koppelbaar aan Vraag, Subvraag én Uitwerking via koppeltabellen |
-| Leerjaar + niveau | Gecombineerde koppeltabel `vraag_niveau_leerjaar` met `niveau_id` + `leerjaar` (integer). Niveau is een vaste lijst: Basisonderwijs (1–8), VMBO-b/k/t (1–4), HAVO (1–5), VWO (1–6). MBO/HBO/WO volgen later. |
-| Correctievoorschrift | Alleen tekst — geen assets. Vaste opbouw nog te ontwerpen. |
-| Assets | Opgeslagen in Supabase Storage, database bevat alleen de URL. Deelbaar tussen vragen, subvragen en uitwerkingen via koppeltabellen. |
+| Uitwerking | Aparte tabel (niet velden op `vraag`) — houdt ruimte open voor toekomstige structuur |
+| Correctievoorschrift | Aparte tabel, alleen tekst — vaste opbouw nog te ontwerpen |
+| Leerdoel_Methode | FK naar `paragraaf` — leerdoelen zijn paragraaf-specifiek, editie volgt impliciet via de hiërarchie |
+| Leerjaar + niveau | Gecombineerde koppeltabel `vraag_niveau_leerjaar` — voorkomt dat niveau en leerjaar los van elkaar betekenis krijgen |
+| Volgorde | `volgorde` integer op `subvraag`, `hoofdstuk` en `paragraaf`. `nummer` is optioneel (integer) voor het boekgetal — `volgorde` is altijd aanwezig voor sortering. |
+| AI-traceerbaarheid | `ai_model` en `skill_ref` op `vraag` — traceerbaar welk model en welke skill een vraag heeft gegenereerd |
+| Status | `status` enum op `vraag`: concept / gepubliceerd / gearchiveerd — essentieel voor AI-workflows |
+| Opzoeken door AI | AI navigeert op naam — geen aparte `code`-kolom nodig |
+| Onderwerphiërarchie | Één tabel `onderwerp` met optionele `ouder_id` — onbeperkt diep |
+| Taxonomie | Aparte tabellen voor systeem én label — flexibel voor meerdere systemen per vraag |
+| Assets | Opgeslagen in Supabase Storage (buckets per type), database bevat alleen de URL. Deelbaar via koppeltabellen. |
 | Hergebruik | Één vraag koppelbaar aan meerdere methodes, paragrafen en leerdoelen |
 | Eerste methode | NOVA 1/2 HAVO/VWO MAX Release 5.1 |
+
+---
+
+### Supabase-specifieke beslissingen
+
+| Onderwerp | Beslissing |
+|---|---|
+| Row Level Security | Aanzetten op alle tabellen vanaf dag 1, ook als er nu maar één rol is. Voorkomt een zware migratie later. |
+| Full-text search | `tsvector`-kolom op `vraag` voor zoeken in fase 2 — PostgreSQL-ingebouwd, geen externe dienst nodig |
+| Vector embeddings | `embedding vector(1536)` kolom op `vraag` nu al toevoegen, ook al wordt hij nog niet gebruikt. Later toevoegen aan een grote tabel is kostbaar. |
+| Views | `vraag_volledig` view die alle gekoppelde data samenvoegt — maakt AI-queries eenvoudig en betrouwbaar |
+| Storage buckets | Aparte buckets per assettype: `afbeeldingen`, `videos`, `formules` |
+| Migraties | Opgeslagen in `supabase/migrations/` als SQL-bestanden — tegelijk documentatie en uitvoerbaar schema |
+| Edge Functions | Voor AI-generatie pipeline (Claude API aanroepen) — houdt API-sleutels server-side |
 
 ---
 
@@ -242,19 +302,18 @@ Geen afwijkingen van de standaard conventies in `docs/conventions.md`.
 | Fase | Wat | Status |
 |------|-----|--------|
 | 1 | Requirements & ontwerp | Afgerond |
-| 2 | Database opzetten in Supabase | — |
-| 3 | Datamodel uitwerken en migraties uitvoeren | — |
-| 4 | Mapping NOVA invoeren | — |
-| 5 | Vragen invoeren en koppelen | — |
-| 6 | Interface en gebruikersrollen | Nog te bepalen |
+| 2 | Database opzetten in Supabase + migraties schrijven en uitvoeren | — |
+| 3 | Mapping NOVA invoeren (hoofdstukken, paragrafen, leerdoelen) | — |
+| 4 | Vragen invoeren en koppelen | — |
+| 5 | Interface en gebruikersrollen | Nog te bepalen |
 
 ---
 
 ## 10. Open vragen
 
-- [x] Relaties tussen nodes volledig uitwerken — zie sectie 7 "Relaties"
+- [x] Relaties tussen nodes volledig uitwerken — zie sectie 7
+- [x] Hoe leerjaar + niveau technisch als koppeltabel opzetten? — gecombineerde tabel `vraag_niveau_leerjaar`
 - [ ] Mapping van NOVA uitwerken (hoofdstukken, paragrafen, leerdoelen, onderwerpen)
 - [ ] Vaste opbouw van het correctievoorschrift ontwerpen
-- [x] Hoe leerjaar + niveau technisch als koppeltabel opzetten? — gecombineerde tabel `vraag_niveau_leerjaar`
 - [ ] Wie zijn de gebruikers en hoe wordt de database aangeboden?
 - [ ] Authenticatie en toegangsbeheer (volgt zodra gebruikers bekend zijn)
