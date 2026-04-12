@@ -4,15 +4,19 @@
 
 **Naam:** KlasLab Vragenbank
 **Type:** Webapplicatie
-**Doel:** Een gestructureerde, doorzoekbare database met onderwijsvragen voor het voortgezet onderwijs, te beginnen bij natuurkunde.
-**Scope fase 1:** Database bouwen en vullen met vragen. Koppeling aan curriculum (methodes, leerdoelen, taxonomie).
-**Toekomstvisie:** De database uitbreiden naar meerdere vakken en aanbieden aan gebruikers — wie dat precies zijn en hoe, wordt later bepaald.
+**Doel:** Een complete, kwalitatieve vragenbank voor het gehele voortgezet onderwijs — alle vakken, alle niveaus, alle leerjaren, alle hoofdstukken en paragrafen — gevuld en continu verbeterd via AI.
+**Scope fase 1:** Database bouwen en vullen met vragen voor natuurkunde. Koppeling aan curriculum (methodes, leerdoelen, taxonomie).
+**Toekomstvisie:** Uitgroeien tot het toonaangevende Nederlandse onderwijsplatform voor toetsvragen. De database wordt aangeboden aan scholen, docenten en mogelijk gelicenseerd aan partijen zoals uitgevers of toetsplatformen. Dit is een ondernemersproject met grootse ambities.
 
 ---
 
 ## 2. Projectfilosofie
 
-De kern is een goed gestructureerde vragenbank. Niet de interface of de gebruiker staat centraal in fase 1, maar de kwaliteit en structuur van de data zelf. Vragen worden door AI gegenereerd op basis van doordachte skills — niet gekopieerd uit methodes. Eén vraag kan gekoppeld zijn aan meerdere methodes, paragrafen en leerdoelen.
+De kern is een goed gestructureerde, kwalitatieve vragenbank. In fase 1 staat niet de interface of de gebruiker centraal, maar de kwaliteit en structuur van de data zelf.
+
+Vragen worden door AI gegenereerd op basis van doordachte, zorgvuldig ontwikkelde skills — niet gekopieerd uit methodes. Eén vraag kan gekoppeld zijn aan meerdere methodes, paragrafen en leerdoelen.
+
+De database wordt continu verbeterd via een feedbackloop: docenten en leerlingen geven feedback op vragen die ze gebruiken, AI analyseert die feedback en doet verbetervoorstellen, en beheerders of redacteuren voeren die verbeteringen door. Kwaliteit is geen eindpunt maar een doorlopend proces.
 
 ---
 
@@ -20,7 +24,7 @@ De kern is een goed gestructureerde vragenbank. Niet de interface of de gebruike
 
 | Rol | Rechten |
 |-----|---------|
-| Beheerder | Volledig toegang — vragen aanmaken, bewerken, verwijderen |
+| Beheerder | Volledige toegang — vragen aanmaken, bewerken, verwijderen, AI-voorstellen beoordelen |
 | Overige gebruikers | Nog te bepalen |
 
 **Authenticatie:** Nog te bepalen — volgt zodra gebruikersrollen duidelijk zijn.
@@ -46,6 +50,12 @@ De kern is een goed gestructureerde vragenbank. Niet de interface of de gebruike
 - Exporteren van vragen (Word, PDF)
 - Toetsen samenstellen vanuit de bank
 
+### Fase 3 (toekomst)
+- Feedbacksysteem voor docenten en leerlingen op individuele vragen
+- AI-analyse van feedback met verbetervoorstellen
+- Community-functies: gedeelde vragenbanken, samenwerking tussen scholen
+- Licentiemodel voor externe partijen (uitgevers, toetsplatformen)
+
 ---
 
 ## 5. Tech Stack
@@ -63,8 +73,6 @@ De kern is een goed gestructureerde vragenbank. Niet de interface of de gebruike
 ---
 
 ## 6. Projectstructuur
-
-```
 src/
 ├── app/
 │   ├── api/             ← API routes
@@ -74,8 +82,6 @@ src/
 ├── lib/
 │   └── supabase.ts      ← Supabase client
 └── types/               ← gedeelde TypeScript types
-```
-
 ---
 
 ## 7. Design
@@ -91,8 +97,13 @@ Geen afwijkingen van de standaard conventies in `docs/conventions.md`.
 | 1 | Requirements & ontwerp | Afgerond |
 | 2 | Database opzetten in Supabase + migraties schrijven en uitvoeren | Afgerond |
 | 3 | Mapping NOVA invoeren (hoofdstukken, paragrafen, leerdoelen) | — |
-| 4 | Vragen invoeren en koppelen | — |
-| 5 | Interface en gebruikersrollen | Nog te bepalen |
+| 4 | AI-skills bouwen voor het genereren van kwalitatieve vragen met volledige metadata | — |
+| 5 | Database vullen met AI-gegenereerde vragen voor natuurkunde (alle niveaus, leerjaren, paragrafen) | — |
+| 6 | Kwaliteitsreview en verfijning van gegenereerde vragen | — |
+| 7 | Interface voor beheerders: vragen inzien, bewerken, AI-voorstellen beoordelen | — |
+| 8 | Uitbreiding naar andere vakken en methodes | — |
+| 9 | Gebruikersinterface, feedbacksysteem en community | Nog te bepalen |
+| 10 | Licentiemodel en externe partnerships | Nog te bepalen |
 
 ---
 
@@ -102,3 +113,5 @@ Geen afwijkingen van de standaard conventies in `docs/conventions.md`.
 - [ ] Vaste opbouw van het correctievoorschrift ontwerpen
 - [ ] Wie zijn de gebruikers en hoe wordt de database aangeboden?
 - [ ] Authenticatie en toegangsbeheer (volgt zodra gebruikers bekend zijn)
+- [ ] Hoe ziet het feedbacksysteem er technisch uit?
+- [ ] Welk licentiemodel past bij de commerciële ambities?
