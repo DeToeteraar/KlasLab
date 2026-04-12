@@ -208,22 +208,28 @@ export type Database = {
     Views: {
       vraag_volledig: {
         Row: {
-          aangemaakt_op: string | null
-          aantal_punten: number | null
-          ai_model: string | null
-          context_tekst: string | null
-          gemaakt_door: string | null
           id: string | null
-          kernleerdoelen: string[] | null
-          niveaus: Json[] | null
-          onderwerpen: string[] | null
-          skill_ref: string | null
-          slo_leerdoelen: string[] | null
-          status: string | null
-          taxonomielabels: string[] | null
-          versie: number | null
           vraag_tekst: string | null
+          context_tekst: string | null
+          aantal_punten: number | null
+          status: string | null
+          gemaakt_door: string | null
+          ai_model: string | null
+          skill_ref: string | null
+          versie: number | null
+          aangemaakt_op: string | null
           vraagtype: string | null
+          kernleerdoelen: string[] | null
+          leerdoel_kern_ids: string[] | null
+          methode_leerdoelen: string[] | null
+          slo_leerdoelen: string[] | null
+          paragraaf_ids: string[] | null
+          paragrafen: Json[] | null
+          hoofdstuk_ids: string[] | null
+          hoofdstukken: Json[] | null
+          onderwerpen: string[] | null
+          taxonomielabels: string[] | null
+          niveaus: Json[] | null
         }
         Relationships: []
       }
@@ -240,15 +246,48 @@ export type Tables<T extends keyof Database['public']['Tables']> =
 export type Views<T extends keyof Database['public']['Views']> =
   Database['public']['Views'][T]['Row']
 
+// Handige type-aliassen
 export type VraagVolledig = Views<'vraag_volledig'>
-export type Vraag = Tables<'vraag'>
-export type Vraagtype = Tables<'vraagtype'>
-export type Editie = Tables<'editie'>
-export type Hoofdstuk = Tables<'hoofdstuk'>
-export type Paragraaf = Tables<'paragraaf'>
-export type LeerdoelMethode = Tables<'leerdoel_methode'>
-export type LeerdoelKern = Tables<'leerdoel_kern'>
-export type Subvraag = Tables<'subvraag'>
-export type Asset = Tables<'asset'>
-export type Uitwerking = Tables<'uitwerking'>
-export type Correctievoorschrift = Tables<'correctievoorschrift'>
+
+// Genormaliseerde vraag voor gebruik in de app
+export type Vraag = {
+  id: string
+  vraag_tekst: string
+  context_tekst: string | null
+  aantal_punten: number | null
+  status: string
+  gemaakt_door: string
+  ai_model: string | null
+  vraagtype: string | null
+  taxonomielabels: string[]
+  niveaus: NiveauLeerjaar[]
+  kernleerdoelen: string[]
+  methode_leerdoelen: string[]
+  paragraaf_ids: string[]
+  paragrafen: ParagraafRef[]
+  hoofdstuk_ids: string[]
+  hoofdstukken: HoofdstukRef[]
+  // Aanwezigheid (apart opgehaald)
+  heeftSubvragen: boolean
+  heeftAssets: boolean
+  heeftCorrectiemodel: boolean
+  heeftUitwerking: boolean
+}
+
+export type NiveauLeerjaar = { niveau: string; leerjaar: number }
+export type ParagraafRef = { id: string; titel: string; nummer: number | null; volgorde: number }
+export type HoofdstukRef = { id: string; titel: string; nummer: number | null; volgorde: number }
+
+// Facet-types voor de sidebar
+export type FacetOptie = { id: string; label: string; count: number }
+
+export type ActieveFilters = {
+  zoekterm: string
+  hoofdstuk_id: string | null
+  paragraaf_id: string | null
+  leerdoel: string | null       // methode-leerdoel omschrijving
+  taxonomie: string | null
+  vraagtype: string | null
+  niveau: string | null
+  status: string | null
+}
