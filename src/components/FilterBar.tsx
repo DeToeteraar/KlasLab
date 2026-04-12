@@ -6,7 +6,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@/components/ui/select'
 import { FilterState } from '@/components/LeerdoelAccordion'
 
@@ -23,79 +22,73 @@ const TAXONOMIE = ['Onthouden', 'Begrijpen', 'Toepassen', 'Analyseren', 'Evaluer
 const STATUSSEN = ['concept', 'gepubliceerd', 'gearchiveerd']
 const VRAAGTYPES = ['meerkeuze', 'open', 'berekening', 'waar/onwaar', 'invul']
 
-const LEEG = '__alle__'
+function FilterSelect({
+  waarde,
+  placeholder,
+  opties,
+  onChange,
+}: {
+  waarde: string
+  placeholder: string
+  opties: string[]
+  onChange: (v: string) => void
+}) {
+  return (
+    <Select value={waarde || '__leeg__'} onValueChange={(v) => onChange(v === '__leeg__' ? '' : (v ?? ''))}>
+      <SelectTrigger className="h-8 text-xs w-full">
+        <span className={waarde ? 'text-foreground' : 'text-muted-foreground'}>
+          {waarde || placeholder}
+        </span>
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="__leeg__">{placeholder}</SelectItem>
+        {opties.map((o) => (
+          <SelectItem key={o} value={o}>{o}</SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  )
+}
 
 export function FilterBar({ zoekterm, filters, onZoektermChange, onFilterChange, onReset }: Props) {
-  const heeftFilters =
-    zoekterm || filters.niveau || filters.taxonomie || filters.status || filters.vraagtype
+  const heeftFilters = zoekterm || filters.niveau || filters.taxonomie || filters.status || filters.vraagtype
 
   return (
-    <div className="space-y-2 pt-3">
+    <div className="flex flex-wrap items-center gap-2">
       <Input
         placeholder="Zoek in vraagteksten..."
         value={zoekterm}
         onChange={(e) => onZoektermChange(e.target.value)}
-        className="h-8 text-sm"
+        className="h-8 text-xs w-48 shrink-0"
       />
-
-      <div className="space-y-1.5">
-        <Select
-          value={filters.niveau || LEEG}
-          onValueChange={(v) => onFilterChange('niveau', !v || v === LEEG ? '' : v)}
-        >
-          <SelectTrigger className="h-8 text-xs">
-            <SelectValue placeholder="Niveau" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={LEEG}>Alle niveaus</SelectItem>
-            {NIVEAUS.map((n) => <SelectItem key={n} value={n}>{n}</SelectItem>)}
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={filters.taxonomie || LEEG}
-          onValueChange={(v) => onFilterChange('taxonomie', !v || v === LEEG ? '' : v)}
-        >
-          <SelectTrigger className="h-8 text-xs">
-            <SelectValue placeholder="Taxonomie" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={LEEG}>Alle taxonomie</SelectItem>
-            {TAXONOMIE.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={filters.status || LEEG}
-          onValueChange={(v) => onFilterChange('status', !v || v === LEEG ? '' : v)}
-        >
-          <SelectTrigger className="h-8 text-xs">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={LEEG}>Alle statussen</SelectItem>
-            {STATUSSEN.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={filters.vraagtype || LEEG}
-          onValueChange={(v) => onFilterChange('vraagtype', !v || v === LEEG ? '' : v)}
-        >
-          <SelectTrigger className="h-8 text-xs">
-            <SelectValue placeholder="Vraagtype" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={LEEG}>Alle typen</SelectItem>
-            {VRAAGTYPES.map((vt) => <SelectItem key={vt} value={vt}>{vt}</SelectItem>)}
-          </SelectContent>
-        </Select>
-      </div>
-
+      <FilterSelect
+        waarde={filters.niveau}
+        placeholder="Alle niveaus"
+        opties={NIVEAUS}
+        onChange={(v) => onFilterChange('niveau', v)}
+      />
+      <FilterSelect
+        waarde={filters.taxonomie}
+        placeholder="Alle taxonomie"
+        opties={TAXONOMIE}
+        onChange={(v) => onFilterChange('taxonomie', v)}
+      />
+      <FilterSelect
+        waarde={filters.status}
+        placeholder="Alle statussen"
+        opties={STATUSSEN}
+        onChange={(v) => onFilterChange('status', v)}
+      />
+      <FilterSelect
+        waarde={filters.vraagtype}
+        placeholder="Alle typen"
+        opties={VRAAGTYPES}
+        onChange={(v) => onFilterChange('vraagtype', v)}
+      />
       {heeftFilters && (
         <button
           onClick={onReset}
-          className="text-xs text-muted-foreground hover:text-foreground underline w-full text-left"
+          className="text-xs text-muted-foreground hover:text-foreground underline shrink-0"
         >
           Wis filters
         </button>

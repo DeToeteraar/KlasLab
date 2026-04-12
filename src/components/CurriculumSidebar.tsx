@@ -7,34 +7,18 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@/components/ui/select'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { CurriculumTree } from '@/components/CurriculumTree'
-import { FilterBar } from '@/components/FilterBar'
-import { FilterState } from '@/components/LeerdoelAccordion'
 import { EditieMetMethode, HoofdstukMetParagrafen, getHoofdstukken } from '@/lib/queries'
 
 type Props = {
   edities: EditieMetMethode[]
   onParagraafSelect: (id: string, titel: string, nummer: number | null) => void
-  zoekterm: string
-  filters: FilterState
-  onZoektermChange: (v: string) => void
-  onFilterChange: (key: keyof FilterState, value: string) => void
-  onReset: () => void
 }
 
-export function CurriculumSidebar({
-  edities,
-  onParagraafSelect,
-  zoekterm,
-  filters,
-  onZoektermChange,
-  onFilterChange,
-  onReset,
-}: Props) {
+export function CurriculumSidebar({ edities, onParagraafSelect }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -52,6 +36,11 @@ export function CurriculumSidebar({
       setLoading(false)
     })
   }, [editieId])
+
+  const geselecteerdeEditie = edities.find((e) => e.id === editieId)
+  const editieLabel = geselecteerdeEditie
+    ? `${geselecteerdeEditie.methode.naam} — ${geselecteerdeEditie.naam}`
+    : 'Kies editie...'
 
   const handleEditieChange = useCallback(
     (id: string | null) => {
@@ -83,11 +72,11 @@ export function CurriculumSidebar({
 
   return (
     <aside className="w-[280px] shrink-0 h-screen flex flex-col bg-muted border-r">
-      <div className="p-4 space-y-3">
+      <div className="p-4 space-y-2">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Editie</p>
         <Select value={editieId} onValueChange={handleEditieChange}>
-          <SelectTrigger className="h-8 text-xs bg-background">
-            <SelectValue placeholder="Kies editie..." />
+          <SelectTrigger className="h-8 text-xs bg-background w-full">
+            <span className="flex-1 truncate text-left">{editieLabel}</span>
           </SelectTrigger>
           <SelectContent>
             {edities.map((e) => (
@@ -112,19 +101,6 @@ export function CurriculumSidebar({
           />
         )}
       </ScrollArea>
-
-      <Separator />
-
-      <div className="p-4">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Zoeken & filteren</p>
-        <FilterBar
-          zoekterm={zoekterm}
-          filters={filters}
-          onZoektermChange={onZoektermChange}
-          onFilterChange={onFilterChange}
-          onReset={onReset}
-        />
-      </div>
     </aside>
   )
 }

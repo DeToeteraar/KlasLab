@@ -54,11 +54,6 @@ function AppInner() {
       <CurriculumSidebar
         edities={edities}
         onParagraafSelect={handleParagraafSelect}
-        zoekterm={zoekterm}
-        filters={filters}
-        onZoektermChange={setZoekterm}
-        onFilterChange={handleFilterChange}
-        onReset={handleReset}
       />
       <main className="flex-1 overflow-y-auto bg-white">
         <ParagraafView
@@ -67,6 +62,9 @@ function AppInner() {
           paragraafNummer={paragraafInfo?.nummer ?? null}
           zoekterm={zoekterm}
           filters={filters}
+          onZoektermChange={setZoekterm}
+          onFilterChange={handleFilterChange}
+          onReset={handleReset}
         />
       </main>
     </div>

@@ -22,8 +22,8 @@ export function VraagCard({ vraag }: { vraag: VraagKaart }) {
   return (
     <Card
       className={cn(
-        'cursor-pointer transition-shadow hover:shadow-md',
-        open && 'ring-1 ring-slate-300'
+        'cursor-pointer border border-slate-200 bg-white transition-shadow hover:shadow-sm hover:border-slate-300',
+        open && 'border-slate-300 shadow-sm'
       )}
       onClick={() => setOpen(!open)}
     >
